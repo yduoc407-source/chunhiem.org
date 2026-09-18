@@ -128,7 +128,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
 
 <script>
 // Dán URL Web app của Apps Script (kết thúc bằng /exec) vào giữa hai dấu nháy:
-const API_URL="https://script.google.com/macros/s/AKfycbxnzjRl8B5m_qTNj5V2BICX3L-3GwEwiwXEf3aYIfzLL4P2bi69nSnn0tqf_qrtHwRmUw/exechttps://script.google.com/macros/s/AKfycbxOc9muiMUSkdIAtiU-lKHeYz9ahfTUucKQfd6Rqe3iC8fjorjfTAv79lbBh03dN_kyxw/exechttps://script.google.com/macros/s/AKfycbwBixm9pYtrm83TrdEeuhJLlYNy1XT5LdyA0iNi_YiQnnlicbA58s8Fz4aqMI3gThZB1Q/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbxI9cwxh6wKQtKZTxM-8OHyi5iFr41dNin9zqgFH8uQI0Kk5d968blcG2hwdRblikfqng/exec";
 
 let STUDENTS=[], MINUS=[], PLUS=[], CAT={};
 function buildCat(cri){
@@ -206,28 +206,38 @@ async function api(params, body){
   const r=await fetch(API_URL+"?"+q,{cache:"no-store"});
   return r.json();
 }
+let pending=0;
+function setSync(){ $("status").textContent = pending>0 ? "Đang đồng bộ lên Google Sheet…" : "Đã đồng bộ. Dữ liệu tự làm mới mỗi 30 giây."; }
 async function add(stt,code){
-  const c=CAT[code];if(!c||busy)return;
+  const c=CAT[code];if(!c)return;
   const s=STUDENTS.find(x=>x.stt===stt);
   const ev={stt,name:s.name,to:s.to,code,label:c.t,points:c.sign*c.p,flag:!!c.flag,week:key(week),by:AUTH.role};
-  busy=true;
+  const tmp={...ev,id:"tmp"+Date.now()+Math.random(),ts:Date.now(),pending:true};
+  events.push(tmp); if(ev.flag)flaggedAll.push(tmp);
+  toast((c.sign>0?"+":"-")+c.p+" · "+s.name); render();
+  pending++; setSync();
   try{
     const r=await api(null,{action:"add",ev});
     if(!r.ok)throw new Error(r.error||"");
-    const full={...ev,id:r.id,ts:Date.now()};
-    events.push(full); if(ev.flag)flaggedAll.push(full);
-    toast((c.sign>0?"+":"-")+c.p+" · "+s.name); render();
-  }catch(e){toast(/tổ mình/.test(e.message)?"Chỉ được chấm tổ viên của tổ mình":"Không lưu được, thử lại")}
-  busy=false;
+    tmp.id=r.id; delete tmp.pending;
+  }catch(e){
+    events=events.filter(x=>x!==tmp); flaggedAll=flaggedAll.filter(x=>x!==tmp);
+    toast(/tổ mình/.test(e.message)?"Chỉ được chấm tổ viên của tổ mình":"Không lưu được, đã hoàn lại"); render();
+  }
+  pending--; setSync();
 }
 async function del(id){
-  if(busy)return; busy=true;
+  const ev=events.find(e=>e.id===id); if(!ev||ev.pending){toast("Đang lưu, chờ một chút");return}
+  events=events.filter(e=>e.id!==id);flaggedAll=flaggedAll.filter(e=>e.id!==id);
+  toast("Đã hoàn tác");render();
+  pending++; setSync();
   try{
     const r=await api(null,{action:"del",id}); if(!r.ok)throw new Error(r.error||"");
-    events=events.filter(e=>e.id!==id);flaggedAll=flaggedAll.filter(e=>e.id!==id);
-    toast("Đã hoàn tác");render();
-  }catch(e){toast(/mình chấm/.test(e.message)?"Chỉ hoàn tác được lượt do mình chấm":"Không xoá được")}
-  busy=false;
+  }catch(e){
+    events.push(ev); if(ev.flag)flaggedAll.push(ev);
+    toast(/mình chấm/.test(e.message)?"Chỉ hoàn tác được lượt do mình chấm":"Không xoá được"); render();
+  }
+  pending--; setSync();
 }
 
 /* ===== render ===== */
@@ -248,7 +258,7 @@ function actionsHTML(stt){
   const mine=events.filter(e=>e.stt===stt).sort((a,b)=>b.ts-a.ts);
   if(mine.length){h+='<div class="grp">Đã ghi tuần này</div>';
     mine.forEach(e=>{h+=`<div class="log"><span class="${e.points>0?'pos':'neg'}" style="font-weight:700">${sgn(e.points)}</span>
-      <span>${e.label}</span>${(AUTH.role==="gvcn"||e.by===AUTH.role)?`<button class="x" data-del="${e.id}">Hoàn tác</button>`:`<span class="note" style="margin-left:auto">${e.by==="gvcn"?"GVCN":"Tổ "+String(e.by).slice(2)}</span>`}</div>`})}
+      <span>${e.label}${e.pending?' <span class="note">(đang lưu)</span>':''}</span>${(AUTH.role==="gvcn"||e.by===AUTH.role)?`<button class="x" data-del="${e.id}">Hoàn tác</button>`:`<span class="note" style="margin-left:auto">${e.by==="gvcn"?"GVCN":"Tổ "+String(e.by).slice(2)}</span>`}</div>`})}
   return h;
 }
 
@@ -341,7 +351,7 @@ function bind(){
 
 /* ===== dữ liệu ===== */
 function showLogin(msg){
-  AUTH=null;localStorage.removeItem("tdAuth");
+  AUTH=null;metaLoaded=false;localStorage.removeItem("tdAuth");
   $("app").style.display="none";$("loginCard").style.display="block";$("loginMsg").textContent=msg||"";
 }
 function showApp(){
@@ -362,20 +372,27 @@ $("user").addEventListener("keydown",e=>{if(e.key==="Enter")$("pin").focus()});
 $("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("loginBtn").onclick()});
 $("logout").onclick=()=>{if(confirm("Đăng xuất?"))showLogin()};
 
+let metaLoaded=false;
 async function load(silent){
   if(!API_URL){$("status").textContent="Chưa cấu hình API_URL trong file index.html.";return}
-  if(!AUTH)return;
+  if(!AUTH||pending>0)return;
   if(!silent)$("status").textContent="Đang tải dữ liệu…";
   try{
-    const d=await api({action:"get",week:key(week)});
+    // lần đầu tải đủ danh sách + tiêu chí, các lần sau chỉ tải lượt chấm
+    const d=await api({action:metaLoaded?"events":"get",week:key(week)});
     if(d.error==="auth"){showLogin("Tài khoản đã đổi mật khẩu, đăng nhập lại");return}
-    AUTH.name=d.name;drawTabs();
-    STUDENTS=d.students; buildCat(d.criteria);
+    if(!metaLoaded){
+      AUTH.name=d.name;drawTabs();
+      STUDENTS=d.students; buildCat(d.criteria); metaLoaded=true;
+      try{localStorage.setItem("tdMeta",JSON.stringify({students:d.students,criteria:d.criteria}))}catch(e){}
+    }
+    if(pending>0)return;
     events=d.events; flaggedAll=d.flaggedAll;
-    $("status").textContent="Dữ liệu lưu trên Google Sheet, tự làm mới mỗi 30 giây.";
-    render();
+    setSync(); render();
   }catch(e){$("status").textContent="Không tải được dữ liệu, kiểm tra kết nối mạng."}
 }
+// dựng giao diện ngay từ bản lưu trên máy trong lúc chờ mạng
+try{const m=JSON.parse(localStorage.getItem("tdMeta")||"null");if(m){STUDENTS=m.students;buildCat(m.criteria)}}catch(e){}
 $("wprev").onclick=()=>{week.setDate(week.getDate()-7);week=monday(week);events=[];open={};render();load()};
 $("wnext").onclick=()=>{week.setDate(week.getDate()+7);week=monday(week);events=[];open={};render();load()};
 if(AUTH)showApp(); else showLogin();
