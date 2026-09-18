@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thi đua lớp 11A9</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Thi đua 11A9">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --line:#e3e6ea; --text:#15181c; --muted:#6b7280;
+  --plus:#16a34a; --plus-soft:#dcfce7; --minus:#dc2626; --minus-soft:#fee2e2;
+  --accent:#2563eb; --accent-soft:#e0ecff; --warn:#b45309; --warn-soft:#fef3c7;
+  --radius:14px;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1115; --card:#171a20; --line:#2a2f38; --text:#e8eaed; --muted:#9aa3af;
+    --plus:#34d399; --plus-soft:#0f2e22; --minus:#f87171; --minus-soft:#3a1616;
+    --accent:#60a5fa; --accent-soft:#16233a; --warn:#fbbf24; --warn-soft:#332507;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1115; --card:#171a20; --line:#2a2f38; --text:#e8eaed; --muted:#9aa3af;
+  --plus:#34d399; --plus-soft:#0f2e22; --minus:#f87171; --minus-soft:#3a1616;
+  --accent:#60a5fa; --accent-soft:#16233a; --warn:#fbbf24; --warn-soft:#332507;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding:14px 14px 60px}
+h1{font-size:19px;margin:0}
+.sub{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spread{justify-content:space-between}
+button{font:inherit;color:inherit;cursor:pointer;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;padding:7px 12px}
+button:hover{border-color:var(--accent)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.tabs button{white-space:nowrap}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.stu{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden;background:var(--card)}
+.stu>.hd{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+.stu>.hd:hover{background:var(--accent-soft)}
+.no{width:28px;height:28px;flex:0 0 28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.nm{flex:1;font-weight:600}
+.sc{font-weight:700;font-variant-numeric:tabular-nums}
+.pos{color:var(--plus)} .neg{color:var(--minus)} .zero{color:var(--muted)}
+.body{display:none;border-top:1px solid var(--line);padding:12px;background:var(--bg)}
+.stu.open .body{display:block}
+.grp{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:10px 0 6px}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.act{font-size:13px;text-align:left;padding:7px 10px;border-radius:9px;line-height:1.3}
+.act.m{background:var(--minus-soft);border-color:transparent;color:var(--minus)}
+.act.p{background:var(--plus-soft);border-color:transparent;color:var(--plus)}
+.act b{font-variant-numeric:tabular-nums}
+.bars{margin-top:8px}
+.bartrack{display:flex;align-items:center;height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar-p{background:var(--plus);height:100%} .bar-m{background:var(--minus);height:100%}
+.bl{display:flex;gap:8px;font-size:11px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.tile{flex:1 1 180px;border:1px solid var(--line);border-radius:12px;padding:12px}
+.tile h3{margin:0 0 2px;font-size:14px}
+.big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.log{font-size:13px;border-top:1px solid var(--line);padding:7px 0;display:flex;gap:8px;align-items:flex-start}
+.log .x{margin-left:auto;font-size:11px;padding:3px 8px}
+.alert{border-left:4px solid var(--warn);background:var(--warn-soft);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.alert.hot{border-left-color:var(--minus);background:var(--minus-soft)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--text);color:var(--bg);
+  padding:9px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:50}
+.toast.on{opacity:1}
+.scroll{overflow-x:auto}
+.install{display:none;position:fixed;left:12px;right:12px;bottom:14px;z-index:40;background:var(--card);
+  border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+.install.on{display:block}
+.install .btn{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.install .ios{font-size:13px;color:var(--muted);margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.note{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="loginCard" style="display:none;max-width:380px;margin:40px auto">
+    <h1 style="margin-bottom:4px">Thi đua lớp 11A9</h1>
+    <div class="sub" style="margin-bottom:12px">Đăng nhập bằng tài khoản do giáo viên chủ nhiệm cấp</div>
+    <input id="user" type="text" autocomplete="username" autocapitalize="none" placeholder="Tên đăng nhập" style="width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);margin-bottom:8px">
+    <input id="pin" type="password" autocomplete="current-password" placeholder="Mật khẩu" style="width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);margin-bottom:10px">
+    <button id="loginBtn" style="width:100%;background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;padding:10px">Đăng nhập</button>
+    <div class="note" id="loginMsg" style="margin-top:8px"></div>
+  </div>
+  <div id="app">
+  <div class="card">
+    <div class="row spread">
+      <div><h1>Thi đua lớp 11A9</h1><div class="sub" id="whoami">Chọn vai trò để bắt đầu</div></div>
+      <div class="row">
+        <button id="wprev">‹</button>
+        <div style="text-align:center;min-width:150px"><div id="wlabel" style="font-weight:600"></div><div class="sub" id="wrange"></div></div>
+        <button id="wnext">›</button>
+        <button id="logout" title="Đăng xuất">Thoát</button>
+      </div>
+    </div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div id="view"></div>
+  <div class="note" id="status"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="install" id="install">
+  <div class="row spread">
+    <div><b>Cài đặt app vào màn hình chính</b><div class="sub">Mở nhanh như app, không hiện thanh địa chỉ.</div></div>
+    <div class="row"><button class="btn" id="installBtn">Cài đặt</button><button id="installNo">Để sau</button></div>
+  </div>
+  <div class="ios" id="iosHint" style="display:none">Trên iPhone: bấm nút Chia sẻ <b>⎋</b> ở thanh dưới của Safari, chọn <b>Thêm vào MH chính</b>.</div>
+</div>
+
+<script>
+// Dán URL Web app của Apps Script (kết thúc bằng /exec) vào giữa hai dấu nháy:
+const API_URL="";
+
+let STUDENTS=[], MINUS=[], PLUS=[], CAT={};
+function buildCat(cri){
+  CAT={};MINUS=[];PLUS=[];
+  const grp={};
+  cri.forEach(i=>{
+    const list=i.type==="TRU"?MINUS:PLUS;
+    let g=list.find(x=>x.g===i.g); if(!g){g={g:i.g,items:[]};list.push(g)}
+    g.items.push(i);
+    CAT[i.c]={...i,sign:i.type==="TRU"?-1:1,grp:i.g};
+  });
+}
+
+/* ===== tuần ===== */
+function monday(d){const x=new Date(d);const k=(x.getDay()+6)%7;x.setHours(0,0,0,0);x.setDate(x.getDate()-k);return x}
+function key(d){const m=monday(d);return m.getFullYear()+"-"+String(m.getMonth()+1).padStart(2,"0")+"-"+String(m.getDate()).padStart(2,"0")}
+function fmt(d){return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")}
+let week = monday(new Date());
+let AUTH = null; try{AUTH=JSON.parse(localStorage.getItem("tdAuth")||"null")}catch(e){}
+let role = "class";
+let events = [];
+let flaggedAll = [];
+let open = {};
+
+const $=id=>document.getElementById(id);
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("on"),1600)}
+
+function allowedTabs(){
+  if(!AUTH)return [];
+  if(AUTH.role==="gvcn")return [["to1","Tổ 1"],["to2","Tổ 2"],["to3","Tổ 3"],["to4","Tổ 4"],["class","Toàn lớp"],["gvcn","GVCN"]];
+  return [[AUTH.role,"Tổ "+AUTH.role[2]],["class","Toàn lớp"]];
+}
+function drawTabs(){
+  const tabs=allowedTabs();
+  if(!tabs.some(t=>t[0]===role)) role=tabs.length?tabs[0][0]:"class";
+  $("tabs").innerHTML="";
+  tabs.forEach(([k,l])=>{const b=document.createElement("button");b.textContent=l;
+    if(role===k)b.className="on";
+    b.onclick=()=>{role=k;localStorage.setItem("tdRole",k);open={};drawTabs();render()};
+    $("tabs").appendChild(b)});
+  $("whoami").textContent=AUTH?("Đăng nhập: "+AUTH.name):"";
+}
+function drawWeek(){
+  const end=new Date(week);end.setDate(end.getDate()+6);
+  $("wlabel").textContent="Tuần "+fmt(week)+" – "+fmt(end);
+  $("wrange").textContent=key(week)===key(new Date())?"tuần hiện tại":"";
+}
+
+/* ===== tính điểm ===== */
+function calc(){
+  const m={};STUDENTS.forEach(s=>m[s.stt]={plus:0,minus:0,n:0});
+  events.forEach(e=>{if(!m[e.stt])return;
+    if(e.points>0)m[e.stt].plus+=e.points;else m[e.stt].minus+=-e.points;m[e.stt].n++});
+  STUDENTS.forEach(s=>m[s.stt].net=m[s.stt].plus-m[s.stt].minus);
+  return m;
+}
+function toStat(m){
+  const t={};[1,2,3,4].forEach(i=>t[i]={plus:0,minus:0,net:0,n:0});
+  STUDENTS.forEach(s=>{const x=m[s.stt];t[s.to].plus+=x.plus;t[s.to].minus+=x.minus;t[s.to].net+=x.net;t[s.to].n++});
+  return t;
+}
+function cls(v){return v>0?"pos":v<0?"neg":"zero"}
+function sgn(v){return (v>0?"+":"")+v}
+
+/* ===== ghi nhận ===== */
+let busy=false;
+async function api(params, body){
+  if(body){
+    body.auth={user:AUTH.user,pass:AUTH.pass};
+    const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body)});
+    return r.json();
+  }
+  if(AUTH){params.user=AUTH.user;params.pass=AUTH.pass}
+  const q=new URLSearchParams(params).toString();
+  const r=await fetch(API_URL+"?"+q,{cache:"no-store"});
+  return r.json();
+}
+async function add(stt,code){
+  const c=CAT[code];if(!c||busy)return;
+  const s=STUDENTS.find(x=>x.stt===stt);
+  const ev={stt,name:s.name,to:s.to,code,label:c.t,points:c.sign*c.p,flag:!!c.flag,week:key(week),by:AUTH.role};
+  busy=true;
+  try{
+    const r=await api(null,{action:"add",ev});
+    if(!r.ok)throw new Error(r.error||"");
+    const full={...ev,id:r.id,ts:Date.now()};
+    events.push(full); if(ev.flag)flaggedAll.push(full);
+    toast((c.sign>0?"+":"-")+c.p+" · "+s.name); render();
+  }catch(e){toast(/tổ mình/.test(e.message)?"Chỉ được chấm tổ viên của tổ mình":"Không lưu được, thử lại")}
+  busy=false;
+}
+async function del(id){
+  if(busy)return; busy=true;
+  try{
+    const r=await api(null,{action:"del",id}); if(!r.ok)throw new Error(r.error||"");
+    events=events.filter(e=>e.id!==id);flaggedAll=flaggedAll.filter(e=>e.id!==id);
+    toast("Đã hoàn tác");render();
+  }catch(e){toast(/mình chấm/.test(e.message)?"Chỉ hoàn tác được lượt do mình chấm":"Không xoá được")}
+  busy=false;
+}
+
+/* ===== render ===== */
+function render(){
+  drawWeek();
+  const m=calc();
+  if(!AUTH){$("view").innerHTML="";return}
+  if(role.startsWith("to")) viewTo(+role[2],m); else if(role==="class") viewClass(m); else if(AUTH.role==="gvcn") viewGV(m);
+}
+
+function actionsHTML(stt){
+  let h='<div class="grp">Trừ điểm</div>';
+  MINUS.forEach(g=>{h+='<div class="acts">';g.items.forEach(i=>{
+    h+=`<button class="act m" data-add="${stt}|${i.c}">${i.t} <b>-${i.p}</b></button>`});h+='</div>'});
+  h+='<div class="grp">Cộng điểm</div>';
+  PLUS.forEach(g=>{h+='<div class="acts">';g.items.forEach(i=>{
+    h+=`<button class="act p" data-add="${stt}|${i.c}">${i.t} <b>+${i.p}</b></button>`});h+='</div>'});
+  const mine=events.filter(e=>e.stt===stt).sort((a,b)=>b.ts-a.ts);
+  if(mine.length){h+='<div class="grp">Đã ghi tuần này</div>';
+    mine.forEach(e=>{h+=`<div class="log"><span class="${e.points>0?'pos':'neg'}" style="font-weight:700">${sgn(e.points)}</span>
+      <span>${e.label}</span>${(AUTH.role==="gvcn"||e.by===AUTH.role)?`<button class="x" data-del="${e.id}">Hoàn tác</button>`:`<span class="note" style="margin-left:auto">${e.by==="gvcn"?"GVCN":"Tổ "+String(e.by).slice(2)}</span>`}</div>`})}
+  return h;
+}
+
+function viewTo(to,m){
+  const list=STUDENTS.filter(s=>s.to===to);
+  const t=toStat(m)[to];
+  let h=`<div class="card"><div class="row spread"><div><h3 style="margin:0">Tổ ${to} · ${list.length} thành viên</h3>
+    <div class="sub">Bấm vào tên học sinh để chấm điểm</div></div>
+    <div style="text-align:right"><div class="big ${cls(t.net)}">${sgn(t.net)}</div>
+    <div class="sub"><span class="pos">+${t.plus}</span> / <span class="neg">-${t.minus}</span></div></div></div></div>`;
+  h+='<div class="card">';
+  list.forEach(s=>{const x=m[s.stt];
+    h+=`<div class="stu ${open[s.stt]?"open":""}" data-stu="${s.stt}">
+      <div class="hd" data-tog="${s.stt}"><div class="no">${s.stt}</div><div class="nm">${s.name}</div>
+        <div class="sc ${cls(x.net)}">${sgn(x.net)}</div></div>
+      <div class="body">${open[s.stt]?actionsHTML(s.stt):""}</div></div>`});
+  h+='</div>';
+  $("view").innerHTML=h;
+  bind();
+}
+
+function viewClass(m){
+  const t=toStat(m);
+  const max=Math.max(60,...STUDENTS.map(s=>Math.max(m[s.stt].plus,m[s.stt].minus)));
+  let h='<div class="card"><div class="row">';
+  [1,2,3,4].forEach(i=>{const x=t[i];const avg=Math.round(x.net/x.n);
+    h+=`<div class="tile"><h3>Tổ ${i}</h3><div class="big ${cls(x.net)}">${sgn(x.net)}</div>
+      <div class="sub"><span class="pos">+${x.plus}</span> / <span class="neg">-${x.minus}</span> · TB ${sgn(avg)}</div></div>`});
+  h+='</div></div>';
+
+  [1,2,3,4].forEach(i=>{
+    const list=STUDENTS.filter(s=>s.to===i).sort((a,b)=>m[b.stt].net-m[a.stt].net);
+    h+=`<div class="card"><div class="row spread" style="margin-bottom:8px">
+      <h3 style="margin:0">Tổ ${i}</h3><span class="pill">${sgn(t[i].net)} điểm</span></div>`;
+    list.forEach(s=>{const x=m[s.stt];
+      const wp=Math.round(x.plus/max*50), wm=Math.round(x.minus/max*50);
+      h+=`<div style="padding:8px 0;border-top:1px solid var(--line)">
+        <div class="row spread"><div><b>${s.stt}. ${s.name}</b></div>
+          <div class="sc ${cls(x.net)}">${sgn(x.net)}</div></div>
+        <div class="bars"><div class="bartrack">
+          <div class="bar-p" style="width:${wp}%"></div><div class="bar-m" style="width:${wm}%"></div></div>
+          <div class="bl"><span class="pos">▲ cộng ${x.plus}</span><span class="neg">▼ trừ ${x.minus}</span></div></div></div>`});
+    h+='</div>'});
+  h+='<div class="note">Thanh xanh là điểm cộng, thanh đỏ là điểm trừ, so trên cùng một thước của cả lớp.</div>';
+  $("view").innerHTML=h;
+}
+
+function viewGV(m){
+  const flagged=flaggedAll;
+  const by={};
+  flagged.forEach(e=>{(by[e.stt]=by[e.stt]||[]).push(e)});
+  const rows=Object.keys(by).map(k=>({stt:+k,list:by[k]}))
+    .sort((a,b)=>b.list.length-a.list.length);
+  let h=`<div class="card"><h3 style="margin:0 0 4px">Cần làm việc với phụ huynh</h3>
+    <div class="sub">Các lỗi đi trễ, nghỉ học, không thuộc bài, gian lận, vô lễ. Cộng dồn từ đầu năm, không tính riêng từng tuần. Từ 3 lượt vi phạm trở lên là mời phụ huynh.</div></div>`;
+  if(!rows.length) h+='<div class="card">Chưa có lỗi nào thuộc nhóm cần trao đổi với phụ huynh.</div>';
+  rows.forEach(r=>{
+    const s=STUDENTS.find(x=>x.stt===r.stt);
+    const hot=r.list.length>=3;
+    const weeks=new Set(r.list.map(e=>e.week)).size;
+    const detail={};r.list.forEach(e=>detail[e.label]=(detail[e.label]||0)+1);
+    h+=`<div class="alert ${hot?"hot":""}"><div class="row spread">
+      <b>${s.stt}. ${s.name} · Tổ ${s.to}</b><span>${r.list.length} lượt / ${weeks} tuần${hot?" · MỜI PHỤ HUYNH":""}</span></div>
+      <div class="sub">${Object.keys(detail).map(k=>k+" ×"+detail[k]).join(" · ")}</div></div>`});
+
+  h+='<div class="card"><h3 style="margin:0 0 8px">Bảng điểm toàn lớp</h3><div class="scroll"><table><tr><th>STT</th><th>Họ và tên</th><th>Tổ</th><th style="text-align:right">Cộng</th><th style="text-align:right">Trừ</th><th style="text-align:right">Tổng</th></tr>';
+  STUDENTS.slice().sort((a,b)=>m[b.stt].net-m[a.stt].net).forEach(s=>{const x=m[s.stt];
+    h+=`<tr><td>${s.stt}</td><td>${s.name}</td><td>${s.to}</td>
+      <td class="n pos">${x.plus}</td><td class="n neg">${x.minus}</td><td class="n ${cls(x.net)}">${sgn(x.net)}</td></tr>`});
+  h+='</table></div></div>';
+
+  const log=events.slice().sort((a,b)=>b.ts-a.ts).slice(0,40);
+  h+='<div class="card"><h3 style="margin:0 0 4px">Nhật ký chấm gần nhất</h3>';
+  log.forEach(e=>{const d=new Date(e.ts);
+    h+=`<div class="log"><span class="${e.points>0?'pos':'neg'}" style="font-weight:700;min-width:36px">${sgn(e.points)}</span>
+      <span>${e.name} · ${e.label}</span>
+      <span class="note" style="margin-left:auto">${fmt(d)} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span></div>`});
+  if(!log.length)h+='<div class="note">Chưa có dữ liệu tuần này.</div>';
+  h+='</div>';
+  $("view").innerHTML=h;
+}
+
+function bind(){
+  $("view").querySelectorAll("[data-tog]").forEach(el=>el.onclick=()=>{
+    const id=+el.dataset.tog;open[id]=!open[id];render()});
+  $("view").querySelectorAll("[data-add]").forEach(el=>el.onclick=e=>{
+    e.stopPropagation();const[a,b]=el.dataset.add.split("|");add(+a,b)});
+  $("view").querySelectorAll("[data-del]").forEach(el=>el.onclick=e=>{e.stopPropagation();del(el.dataset.del)});
+}
+
+/* ===== dữ liệu ===== */
+function showLogin(msg){
+  AUTH=null;localStorage.removeItem("tdAuth");
+  $("app").style.display="none";$("loginCard").style.display="block";$("loginMsg").textContent=msg||"";
+}
+function showApp(){
+  $("loginCard").style.display="none";$("app").style.display="block";
+  drawTabs();drawWeek();load();
+}
+$("loginBtn").onclick=async()=>{
+  const user=$("user").value.trim(), pin=$("pin").value; if(!user||!pin)return;
+  $("loginMsg").textContent="Đang kiểm tra…";
+  try{
+    const r=await api({action:"login",user,pass:pin});
+    if(!r.ok){$("loginMsg").textContent="Sai tên đăng nhập hoặc mật khẩu";return}
+    AUTH={role:r.role,name:r.name,user:r.user,pass:r.pass};localStorage.setItem("tdAuth",JSON.stringify(AUTH));
+    $("pin").value="";showApp();
+  }catch(e){$("loginMsg").textContent="Không kết nối được máy chủ"}
+};
+$("user").addEventListener("keydown",e=>{if(e.key==="Enter")$("pin").focus()});
+$("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("loginBtn").onclick()});
+$("logout").onclick=()=>{if(confirm("Đăng xuất?"))showLogin()};
+
+async function load(silent){
+  if(!API_URL){$("status").textContent="Chưa cấu hình API_URL trong file index.html.";return}
+  if(!AUTH)return;
+  if(!silent)$("status").textContent="Đang tải dữ liệu…";
+  try{
+    const d=await api({action:"get",week:key(week)});
+    if(d.error==="auth"){showLogin("Tài khoản đã đổi mật khẩu, đăng nhập lại");return}
+    AUTH.name=d.name;drawTabs();
+    STUDENTS=d.students; buildCat(d.criteria);
+    events=d.events; flaggedAll=d.flaggedAll;
+    $("status").textContent="Dữ liệu lưu trên Google Sheet, tự làm mới mỗi 30 giây.";
+    render();
+  }catch(e){$("status").textContent="Không tải được dữ liệu, kiểm tra kết nối mạng."}
+}
+$("wprev").onclick=()=>{week.setDate(week.getDate()-7);week=monday(week);events=[];open={};render();load()};
+$("wnext").onclick=()=>{week.setDate(week.getDate()+7);week=monday(week);events=[];open={};render();load()};
+if(AUTH)showApp(); else showLogin();
+setInterval(()=>load(true),30000);
+
+/* ===== cài đặt app (PWA) ===== */
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+let deferred=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferred=e;
+  if(!standalone&&localStorage.getItem("tdInstallNo")!=="1")$("install").classList.add("on");
+});
+if(isIOS&&!standalone&&localStorage.getItem("tdInstallNo")!=="1"){
+  $("install").classList.add("on");$("installBtn").style.display="none";$("iosHint").style.display="block";
+}
+$("installBtn").onclick=async()=>{
+  if(!deferred)return;deferred.prompt();
+  const r=await deferred.userChoice;deferred=null;$("install").classList.remove("on");
+  if(r.outcome==="accepted")toast("Đã cài app");
+};
+$("installNo").onclick=()=>{localStorage.setItem("tdInstallNo","1");$("install").classList.remove("on")};
+</script>
+</body>
+</html>
